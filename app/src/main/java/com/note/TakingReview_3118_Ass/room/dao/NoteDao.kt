@@ -5,8 +5,8 @@ import com.note.TakingReview_3118_Ass.room.entity.Note
 
 @Dao
 interface NoteDao {
-    @Query("SELECT * FROM note ")
-    fun getNote(): List<Note>
+    @Query("SELECT * FROM note WHERE email = :email")
+    fun getNote(email: String): List<Note>
 
     @Insert
     fun insert(note: Note):Long

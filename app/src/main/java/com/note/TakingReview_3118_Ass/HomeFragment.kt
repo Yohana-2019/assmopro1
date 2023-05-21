@@ -8,18 +8,23 @@ import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.note.TakingReview_3118_Ass.MainActivity.Companion.db
+import com.note.TakingReview_3118_Ass.MainActivity.Companion.gson
+import com.note.TakingReview_3118_Ass.MainActivity.Companion.sharedPref
 import com.note.TakingReview_3118_Ass.adapter.NoteAdapter
 import com.note.TakingReview_3118_Ass.databinding.DialogDeleteBinding
 import com.note.TakingReview_3118_Ass.databinding.DialogEditBinding
 import com.note.TakingReview_3118_Ass.databinding.DialogInsertBinding
 import com.note.TakingReview_3118_Ass.databinding.FragmentHomeBinding
 import com.note.TakingReview_3118_Ass.room.entity.Note
+import com.note.TakingReview_3118_Ass.room.entity.User
+
 
 class HomeFragment : Fragment() {
-    private lateinit var bind: FragmentHomeBinding
-
+    private lateinit var bind:FragmentHomeBinding
+    private lateinit var logged:User
     private lateinit var noteListener: NoteAdapter.Companion.NoteListener
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,13 +32,22 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         bind = FragmentHomeBinding.inflate(inflater,container,false)
-
+        sharedPref.getString("logged", null)?.let {
+            logged= gson.fromJson(it, User::class.java)
+        }
         initElement()
         loadNote()
         return bind.root
     }
     private fun initElement(){
-
+        bind.tvWelcome.text="Welcome, ${logged.username}"
+        bind.tvLogout.setOnClickListener{
+            with (sharedPref.edit()) {
+                remove("logged")
+                commit()
+            }
+            findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+        }
         bind.rvNote.layoutManager = LinearLayoutManager(requireContext())
         val insertDialog = insertDialog()
         bind.fabAdd.setOnClickListener{
@@ -54,7 +68,7 @@ class HomeFragment : Fragment() {
         val bind = DialogInsertBinding.inflate(layoutInflater)
         dialog.setContentView(bind.root)
         bind.btnInput.setOnClickListener{
-            if(db.noteDao().insert(Note(0,bind.etJudul.text.toString(),bind.etCatatan.text.toString()))>=0){
+            if(db.noteDao().insert(Note(0,bind.etJudul.text.toString(),bind.etCatatan.text.toString(),logged.email))>=0){
                 Toast.makeText(requireContext(),"Berhasil menambahkan catatan",Toast.LENGTH_SHORT).show()
                 loadNote()
                 dialog.dismiss()
@@ -84,7 +98,7 @@ class HomeFragment : Fragment() {
         }
         return dialog
     }
-    private fun deleteDialog(note:Note):Dialog{
+    private fun deleteDialog(note: Note):Dialog{
         val dialog = Dialog(requireActivity())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         val bind = DialogDeleteBinding.inflate(layoutInflater)
@@ -105,6 +119,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadNote(){
-        bind.rvNote.adapter = NoteAdapter(db.noteDao().getNote(),noteListener)
+        bind.rvNote.adapter = NoteAdapter(db.noteDao().getNote(logged.email),noteListener)
     }
 }
