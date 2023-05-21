@@ -2,13 +2,13 @@ package com.note.TakingReview_3118_Ass
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.view.*
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.note.TakingReview_3118_Ass.MainActivity.Companion.db
 import com.note.TakingReview_3118_Ass.MainActivity.Companion.gson
@@ -20,12 +20,33 @@ import com.note.TakingReview_3118_Ass.databinding.DialogInsertBinding
 import com.note.TakingReview_3118_Ass.databinding.FragmentHomeBinding
 import com.note.TakingReview_3118_Ass.room.entity.Note
 import com.note.TakingReview_3118_Ass.room.entity.User
+import androidx.navigation.fragment.findNavController
 
 
+@Suppress("DEPRECATION")
 class HomeFragment : Fragment() {
+
     private lateinit var bind:FragmentHomeBinding
     private lateinit var logged:User
     private lateinit var noteListener: NoteAdapter.Companion.NoteListener
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        findNavController()
+        requireActivity().actionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                val navController = findNavController()
+                navController.navigateUp()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
